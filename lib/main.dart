@@ -1,22 +1,34 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
+import 'package:true_false_application/services/karar_servis.dart';
+import 'package:true_false_application/widgets/center_icon.dart';
+import 'package:true_false_application/widgets/siralama_yap.dart';
+
 import 'package:true_false_application/soru_verileri.dart';
-import 'constants.dart';
+import 'package:true_false_application/widgets/sonuc.dart';
 
 void main() => runApp(BilgiTesti());
 
 class BilgiTesti extends StatelessWidget {
+  double _padding = 10.0;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
-            backgroundColor: Colors.orange[400],
-            body: SafeArea(
-                child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10.0),
-              child: SoruSayfasi(),
-            ))));
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        appBar: SiralamaYap(),
+        backgroundColor: Colors.pink[100],
+        body: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: _padding),
+            child: SoruSayfasi(),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -26,7 +38,9 @@ class SoruSayfasi extends StatefulWidget {
 }
 
 class _SoruSayfasiState extends State<SoruSayfasi> {
-  List<Widget> karar = [];
+  List<Icon> karar = [];
+  int dogruSayisi = 0;
+  int yanlisSayisi = 0;
 
   SoruVeri test_1 = SoruVeri();
   void butonFonksiyon(bool secilenButton) {
@@ -37,18 +51,29 @@ class _SoruSayfasiState extends State<SoruSayfasi> {
         builder: (BuildContext context) {
           // return object of type Dialog
           return AlertDialog(
-            title: new Text("TEBRİKLER TESTİ BİTİRDİNİZ."),
+            title: Column(
+              children: [
+                const Text("TEBRİKLER TESTİ BİTİRDİNİZ."),
+                const SizedBox(height: 10),
+                Sonuc(
+                    fontSize: 20.0,
+                    dogruSayisi: dogruSayisi,
+                    yanlisSayisi: yanlisSayisi)
+              ],
+            ),
             //content: new Text("Alert Dialog body"),
             actions: <Widget>[
               // usually buttons at the bottom of the dialog
               TextButton(
-                child: Text("BAŞLANGICA DÖNÜN"),
+                child: const Text("BAŞLANGICA DÖNÜN"),
                 onPressed: () {
                   Navigator.of(context).pop();
 
                   setState(() {
                     karar = [];
                     test_1.testRest();
+                    dogruSayisi = 0;
+                    yanlisSayisi = 0;
                   });
                 },
               ),
@@ -59,9 +84,16 @@ class _SoruSayfasiState extends State<SoruSayfasi> {
     } else {
       setState(
         () {
-          test_1.getSoruCevaplar() == secilenButton
-              ? karar.add(dogruIcon)
-              : karar.add(yanlisIcon);
+          double size = karar.length > 6 ? 40.0 : 60.0;
+          bool isTrue = test_1.getSoruCevaplar() == secilenButton;
+          Icon resultIcon = KararServis.setIcon(size, isTrue);
+          karar = KararServis.setIconList(karar, karar.length);
+          karar.add(resultIcon);
+          // test_1.getSoruCevaplar() == secilenButton
+          //     ? karar.add(dogruIcon)
+          //     : karar.add(yanlisIcon);
+          dogruSayisi = isTrue ? ++dogruSayisi : dogruSayisi;
+          yanlisSayisi = isTrue ? yanlisSayisi : ++yanlisSayisi;
           test_1.sonrakiSoru();
         },
       );
@@ -74,16 +106,17 @@ class _SoruSayfasiState extends State<SoruSayfasi> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
+        const CenterIcon(),
         Expanded(
-          flex: 4,
+          flex: 2,
           child: Padding(
-            padding: EdgeInsets.all(10.0),
+            padding: const EdgeInsets.all(7.0),
             child: Center(
               child: Text(
                 test_1.getSoruMetni(),
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 40.0,
+                style: const TextStyle(
+                  fontSize: 30.0,
                   fontStyle: FontStyle.italic,
                   color: Colors.black,
                 ),
@@ -91,6 +124,13 @@ class _SoruSayfasiState extends State<SoruSayfasi> {
             ),
           ),
         ),
+        if (karar.isNotEmpty)
+          Expanded(
+              flex: 2,
+              child: Sonuc(
+                  fontSize: 25.0,
+                  dogruSayisi: dogruSayisi,
+                  yanlisSayisi: yanlisSayisi)),
         Expanded(
           child: Wrap(
             alignment: WrapAlignment.center,
@@ -137,7 +177,7 @@ class _SoruSayfasiState extends State<SoruSayfasi> {
                       style: ElevatedButton.styleFrom(
                           padding: EdgeInsets.all(10),
                           primary: Colors.redAccent),
-                      child: Icon(
+                      child: const Icon(
                         Icons.thumb_down,
                         size: 60.0,
                       ),
@@ -153,7 +193,7 @@ class _SoruSayfasiState extends State<SoruSayfasi> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                           primary: Colors.green, padding: EdgeInsets.all(10)),
-                      child: Icon(
+                      child: const Icon(
                         Icons.thumb_up,
                         size: 60.0,
                       ),
