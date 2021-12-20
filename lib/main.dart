@@ -116,7 +116,7 @@ class _SoruSayfasiState extends State<SoruSayfasi> {
                 test_1.getSoruMetni(),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 30.0,
+                  fontSize: 25.0,
                   fontStyle: FontStyle.italic,
                   color: Colors.black,
                 ),
